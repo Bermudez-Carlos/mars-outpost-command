@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SOL 15: Mars Outpost Command — Junior Astronaut Trainer</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app-container">
+    <!-- Top Header -->
+    <header class="top-banner">
+      <div class="logo-group">
+        <span class="badge-nasa">NASA SPACE APPS 2026</span>
+        <h1>SOL 15: MARS OUTPOST COMMAND</h1>
+      </div>
+      <div class="header-actions">
+        <div id="apiStatusBadge" class="api-badge loading">
+        Connecting to NASA DONKI Space Weather...
+        </div>
+        <div class="language-toggle" role="group" aria-label="Language">
+          <button type="button" data-language="en" class="selected" aria-pressed="true" onclick="setLanguage('en')">EN</button>
+          <button type="button" data-language="es" aria-pressed="false" onclick="setLanguage('es')">ES</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- SCREEN 1: MISSION BRIEFING -->
+    <section id="briefingScreen" class="screen active">
+      <div class="card hero-card">
+        <h2 data-i18n="briefingTitle">Junior Astronaut Mission Trainer</h2>
+        <p class="subtitle" data-i18n="briefingInstructions">
+          Welcome, Cadet. A Martian <span class="sci-term" data-term="sol" tabindex="0" role="button">Sol</span> lasts <strong>24 hours, 39 minutes</strong>.
+          Your mission is to keep a 4-person NASA habitat alive for <strong>15 <span class="sci-term" data-term="sol" tabindex="0" role="button">Sols</span></strong> by balancing a limited <strong>100 kW</strong> power grid against real Martian hazards.
+        </p>
+
+        <div class="input-group">
+          <label for="commanderInput" data-i18n="commanderLabel">Enter Commander Name:</label>
+          <input type="text" id="commanderInput" data-i18n-placeholder="commanderPlaceholder" placeholder="e.g., Jay" maxlength="24" />
+        </div>
+
+        <fieldset class="difficulty-fieldset">
+          <legend data-i18n="difficultyTitle">Choose mission level</legend>
+          <div class="difficulty-options">
+            <label class="difficulty-option selected">
+              <input type="radio" name="difficulty" value="junior" checked onchange="selectDifficulty('junior')" />
+              <span><strong data-i18n="juniorMode">Junior Cadet</strong><small data-i18n="juniorModeDescription">Ages 7–9 · guided hints · gentler drains</small></span>
+            </label>
+            <label class="difficulty-option">
+              <input type="radio" name="difficulty" value="commander" onchange="selectDifficulty('commander')" />
+              <span><strong data-i18n="commanderMode">Mission Commander</strong><small data-i18n="commanderModeDescription">Ages 10–12+ · full engineering trade-offs</small></span>
+            </label>
+          </div>
+        </fieldset>
+
+        <label class="section-label" data-i18n="landingPrompt">Select a <span class="sci-term" data-term="mars-trek" tabindex="0" role="button">Mars Trek</span> landing site:</label>
+        <div class="site-grid">
+          <div class="site-card selected" data-site="jezero" onclick="selectSite('jezero')">
+            <div class="site-tag" data-i18n="jezeroTag">BALANCED • SURFACE OUTPOST</div>
+            <h3 data-i18n="jezeroName">Ares Horizon Station</h3>
+            <p class="site-subtitle" data-i18n="jezeroSubtitle">Surface station beside Jezero Crater</p>
+            <p class="coords">18.38°N, 77.58°E • Elev: -2,570 m</p>
+            <p class="bonus" data-i18n="jezeroBonus">+25% Science Points from biosignature sampling.</p>
+          </div>
+
+          <div class="site-card" data-site="hellas" onclick="selectSite('hellas')">
+            <div class="site-tag" data-i18n="hellasTag">HIGH RISK • DEEP BASIN SEARCH</div>
+            <h3 data-i18n="hellasName">Olympus Deep Outpost</h3>
+            <p class="site-subtitle" data-i18n="hellasSubtitle">Deep-basin outpost inside Hellas Planitia</p>
+            <p class="coords">42.40°S, 70.50°E • Elev: -7,152 m</p>
+            <p class="bonus" data-i18n="hellasBonus">Higher air pressure boosts <span class="sci-term" data-term="moxie" tabindex="0" role="button">MOXIE</span> oxygen efficiency by 20%, but dust storms are stronger.</p>
+          </div>
+        </div>
+
+        <div class="data-sources-strip" data-i18n="sourcesStrip">
+          <strong>Grounded in Official Open Data:</strong> NASA DONKI (Mars CMEs) • OSDR RadLab (Dosimetry) • Mars Trek (Terrain) • CSA Space Food Toolkit
+        </div>
+
+        <button class="btn-primary btn-large" data-i18n="launchButton" onclick="startMission()">LAUNCH MISSION TO MARS →</button>
+      </div>
+    </section>
+
+    <!-- SCREEN 2: MISSION CONTROL DASHBOARD -->
+    <section id="dashboardScreen" class="screen">
+      <!-- Telemetry HUD -->
+      <div class="telemetry-bar">
+        <div class="tele-box">
+          <span class="tele-label" data-i18n="commander">COMMANDER</span>
+          <span id="hudCommander" class="tele-value">Carlos</span>
+        </div>
+        <div class="tele-box">
+          <span class="tele-label" data-i18n="missionSol">MISSION <span class="sci-term" data-term="sol" tabindex="0" role="button">SOL</span></span>
+          <span id="hudSol" class="tele-value accent-orange">1 / 15</span>
+        </div>
+        <div class="tele-box">
+          <span class="tele-label" data-i18n="powerCapacity">POWER CAPACITY</span>
+          <span id="hudMaxPower" class="tele-value">100 kW</span>
+        </div>
+        <div class="tele-box">
+          <span class="tele-label" data-i18n="surfaceRadiation">SURFACE RADIATION</span>
+          <span class="tele-value"><span id="hudRadiation">0.64</span> <span class="sci-term" data-term="msv-per-sol" tabindex="0" role="button">mSv/Sol</span></span>
+        </div>
+        <div class="tele-box">
+          <span class="tele-label" data-i18n="scienceScore">SCIENCE SCORE</span>
+          <span id="hudScience" class="tele-value accent-cyan">0 PTS</span>
+        </div>
+      </div>
+
+      <section class="habitat-viewport" aria-labelledby="habitatViewportTitle">
+        <div class="viewport-heading">
+          <h2 id="habitatViewportTitle" data-i18n="habitatTitle">Habitat Exterior</h2>
+          <div class="viewport-actions">
+            <span class="habitat-alert hidden" id="habitatAlert" aria-live="assertive"><span class="alert-mark">!</span><span id="habitatStatus" class="habitat-status">SYSTEMS NOMINAL</span></span>
+            <button id="povToggle" class="btn-small" type="button" data-i18n="povExteriorButton" onclick="togglePov()">👁️ Switch POV: Exterior Outpost / Command Deck Window</button>
+          </div>
+        </div>
+        <canvas id="marsCanvas" role="img" data-i18n-aria-label="habitatTitle" aria-label="Animated Mars habitat, greenhouse, solar arrays, and current hazard conditions"></canvas>
+        <div class="viewport-footer">
+          <span id="habitatLocation">JEZERO SECTOR · SURFACE CAM 01</span>
+          <span id="habitatWeather">CLEAR SKIES</span>
+        </div>
+      </section>
+
+      <div class="dashboard-grid">
+        <!-- Left Column: Habitat Vitals -->
+        <div class="card">
+          <h3 data-i18n="vitalsTitle">Habitat Life Support Vitals</h3>
+          <p class="helper-text" data-i18n="vitalsHelper">Keep all systems above 0% to survive. Predictions update live as you adjust power.</p>
+
+          <div class="vital-item">
+            <div class="vital-header">
+              <span data-i18n="oxygenLabel">🫁 Oxygen (<span class="sci-term" data-term="moxie" tabindex="0" role="button">MOXIE</span> CO₂ Splitter)</span>
+              <span><strong id="valOxygen">80%</strong> <span id="predOxygen" class="pred">(-18%)</span></span>
+            </div>
+            <div class="progress-bg"><div id="barOxygen" class="progress-fill cyan" style="width: 80%"></div></div>
+          </div>
+
+          <div class="vital-item">
+            <div class="vital-header">
+              <span data-i18n="foodLabel">🌱 Food & Water (<span class="sci-term" data-term="hydroponics" tabindex="0" role="button">Hydroponics</span>)</span>
+              <span><strong id="valFood">80%</strong> <span id="predFood" class="pred">(-15%)</span></span>
+            </div>
+            <div class="progress-bg"><div id="barFood" class="progress-fill green" style="width: 80%"></div></div>
+          </div>
+
+          <div class="vital-item">
+            <div class="vital-header">
+              <span data-i18n="shieldingLabel">🛡️ Radiation & Thermal Shielding</span>
+              <span><strong id="valShield">85%</strong> <span id="predShield" class="pred">(-12%)</span></span>
+            </div>
+            <div class="progress-bg"><div id="barShield" class="progress-fill amber" style="width: 85%"></div></div>
+          </div>
+
+          <div class="vital-item">
+            <div class="vital-header">
+              <span data-i18n="moraleLabel">🧠 Crew Morale & Focus</span>
+              <span><strong id="valMorale">85%</strong> <span id="predMorale" class="pred">(0%)</span></span>
+            </div>
+            <div class="progress-bg"><div id="barMorale" class="progress-fill purple" style="width: 85%"></div></div>
+          </div>
+
+          <!-- Advisor Box -->
+          <div class="advisor-box">
+            <div class="advisor-header">
+              <span data-i18n="advisorTitle">🛰️ Mission Control Advisor</span>
+              <button id="advisorHintBtn" class="btn-small" data-i18n="hintButton" onclick="getAdvisorHint()">Request Telemetry Hint</button>
+            </div>
+            <p id="signalDelayLabel" class="signal-delay-label" data-i18n="signalDelay">Earth-Mars signal delay: 14 minutes each way</p>
+            <div class="signal-delay-track"><div id="signalDelayBar"></div></div>
+            <p id="advisorText" data-i18n="advisorWelcome">Mission Control can analyze your habitat without an internet connection.</p>
+          </div>
+        </div>
+
+        <!-- Right Column: Power Allocation Sliders -->
+        <div class="card">
+          <div class="power-header">
+            <h3 data-i18n="powerTitle">Power Grid Allocation</h3>
+            <span id="remainingPowerBadge" class="power-pill">Remaining: 100 kW</span>
+          </div>
+          <p class="helper-text" data-i18n="powerHelper">Distribute your <span class="sci-term" data-term="kilopower" tabindex="0" role="button">Kilopower</span> + solar energy across subsystems (5 kW steps).</p>
+
+          <div class="slider-group">
+            <div class="slider-label">
+              <span data-i18n="oxygenSubsystem"><span class="sci-term" data-term="moxie" tabindex="0" role="button">MOXIE</span> Oxygen Generator</span>
+              <strong id="lblPowerO2">0 kW</strong>
+            </div>
+            <div class="power-slider-row">
+              <input type="range" id="sliderO2" min="0" max="100" step="5" value="0" oninput="updateSliders()" />
+              <button type="button" class="stepper-button" data-i18n-aria-label="decreaseOxygen" aria-label="Decrease MOXIE power by 5 kW" onclick="adjustPower('sliderO2', -5)">−5</button>
+              <button type="button" class="stepper-button" data-i18n-aria-label="increaseOxygen" aria-label="Increase MOXIE power by 5 kW" onclick="adjustPower('sliderO2', 5)">+5</button>
+            </div>
+              <small data-i18n="oxygenDescription">Splits 95.3% Martian CO₂ into O₂ at 800°C (+6.5% O₂ per 10 kW)</small>
+          </div>
+
+          <div class="slider-group">
+            <div class="slider-label">
+              <span data-i18n="foodSubsystem"><span class="sci-term" data-term="hydroponics" tabindex="0" role="button">Hydroponic</span> Greenhouse</span>
+              <strong id="lblPowerFood">0 kW</strong>
+            </div>
+            <div class="power-slider-row">
+              <input type="range" id="sliderFood" min="0" max="100" step="5" value="0" oninput="updateSliders()" />
+              <button type="button" class="stepper-button" data-i18n-aria-label="decreaseFood" aria-label="Decrease hydroponics power by 5 kW" onclick="adjustPower('sliderFood', -5)">−5</button>
+              <button type="button" class="stepper-button" data-i18n-aria-label="increaseFood" aria-label="Increase hydroponics power by 5 kW" onclick="adjustPower('sliderFood', 5)">+5</button>
+            </div>
+              <small data-i18n="foodDescription">LED grow-lights & water filtration (+4.5% Food per 10 kW)</small>
+          </div>
+
+          <div class="slider-group">
+            <div class="slider-label">
+              <span data-i18n="shieldingSubsystem">Water-Wall Shield & Heaters</span>
+              <strong id="lblPowerShield">0 kW</strong>
+            </div>
+            <div class="power-slider-row">
+              <input type="range" id="sliderShield" min="0" max="100" step="5" value="0" oninput="updateSliders()" />
+              <button type="button" class="stepper-button" data-i18n-aria-label="decreaseShield" aria-label="Decrease shielding power by 5 kW" onclick="adjustPower('sliderShield', -5)">−5</button>
+              <button type="button" class="stepper-button" data-i18n-aria-label="increaseShield" aria-label="Increase shielding power by 5 kW" onclick="adjustPower('sliderShield', 5)">+5</button>
+            </div>
+              <small data-i18n="shieldingDescription">Counters cold nights and cosmic radiation (+4% Shield per 10 kW). Keep <span class="sci-term" data-term="perchlorates" tabindex="0" role="button">Perchlorates</span> out of the habitat dust.</small>
+          </div>
+
+          <div class="slider-group">
+            <div class="slider-label">
+              <span data-i18n="scienceSubsystem">Science Lab & Earth Comms</span>
+              <strong id="lblPowerScience">0 kW</strong>
+            </div>
+            <div class="power-slider-row">
+              <input type="range" id="sliderScience" min="0" max="100" step="5" value="0" oninput="updateSliders()" />
+              <button type="button" class="stepper-button" data-i18n-aria-label="decreaseScience" aria-label="Decrease science power by 5 kW" onclick="adjustPower('sliderScience', -5)">−5</button>
+              <button type="button" class="stepper-button" data-i18n-aria-label="increaseScience" aria-label="Increase science power by 5 kW" onclick="adjustPower('sliderScience', 5)">+5</button>
+            </div>
+              <small data-i18n="scienceDescription">Earns +15 Science Pts & boosts Crew Morale (+2% per 10 kW)</small>
+          </div>
+
+          <button id="advanceBtn" class="btn-primary btn-large" data-i18n="advanceButton" onclick="advanceSol()">
+            ADVANCE TO SOL 2 →
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- SCREEN 3: END OF MISSION DEBRIEF -->
+    <section id="debriefScreen" class="screen">
+      <div class="card debrief-card">
+        <div id="debriefStatusTag" class="status-tag" data-i18n="debriefComplete">MISSION COMPLETE</div>
+        <h2 id="debriefTitle">Junior Astronaut Rank: Mars Commander</h2>
+        <p id="debriefSummary" class="subtitle"></p>
+
+        <div class="debrief-stats">
+          <div class="stat-pill"><span data-i18n="solsSurvived">Sols Survived</span><strong id="finalSols">15 / 15</strong></div>
+          <div class="stat-pill"><span data-i18n="totalScience">Total Science</span><strong id="finalScience">0 PTS</strong></div>
+          <div class="stat-pill"><span data-i18n="landingSite">Landing Site</span><strong id="finalSite">Jezero Crater</strong></div>
+        </div>
+
+        <section id="certificatePanel" class="certificate-panel hidden" aria-labelledby="certificateTitle">
+          <h3 id="certificateTitle" data-i18n="certificateTitle">Mars Mission Certificate</h3>
+          <p data-i18n="certificateIntro">You completed all 15 Sols. Download your printable astronaut certificate.</p>
+          <button id="downloadCertificateButton" class="btn-primary btn-large" type="button" data-i18n="certificateButton" onclick="downloadMissionCertificate()">Download Astronaut Certificate</button>
+          <p id="certificateStatus" class="certificate-status" role="status" aria-live="polite"></p>
+        </section>
+
+        <section id="cargoResupply" class="cargo-resupply hidden" aria-labelledby="cargoTitle">
+          <div class="cargo-heading">
+            <div>
+              <span class="cargo-kicker" data-i18n="cargoKicker">ARRIVED ON SOL 15</span>
+              <h3 id="cargoTitle" data-i18n="cargoTitle">Starship cargo resupply</h3>
+            </div>
+            <span id="cargoDeclaredMass" class="cargo-total"></span>
+          </div>
+          <p id="cargoMission" class="cargo-mission"></p>
+          <p id="cargoLandingSol" class="cargo-landing"></p>
+          <p id="cargoNotes" class="cargo-notes"></p>
+          <p id="cargoMassNote" class="cargo-mass-note"></p>
+          <ul id="cargoPayloadList" class="cargo-payload-list"></ul>
+        </section>
+
+          <section class="history-panel" aria-labelledby="historyTitle">
+            <div class="history-heading">
+              <h3 id="historyTitle" data-i18n="historyTitle">Habitat vital history</h3>
+              <div class="history-legend" aria-label="Chart series">
+                <span class="legend-oxygen" data-i18n="legendOxygen">Oxygen</span>
+                <span class="legend-food" data-i18n="legendFood">Food</span>
+                <span class="legend-shield" data-i18n="legendShielding">Shielding</span>
+                <span class="legend-morale" data-i18n="legendMorale">Morale</span>
+              </div>
+            </div>
+            <canvas id="vitalHistoryChart" role="img" aria-label="Line chart showing oxygen, food, shielding, and morale across mission Sols"></canvas>
+          </section>
+
+        <div class="log-panel">
+          <h3 data-i18n="engineeringLog">Engineering Debrief: What Happened & Why</h3>
+          <ul id="debriefLogList"></ul>
+        </div>
+
+        <button class="btn-primary btn-large" data-i18n="resetButton" onclick="resetGame()">RUN NEW SIMULATION ↻</button>
+      </div>
+    </section>
+
+    <!-- NASA HAZARD EVENT MODAL -->
+    <div id="eventModal" class="modal-overlay hidden">
+      <div class="modal-box">
+        <span id="eventBadge" class="event-tag" data-i18n="cmeAlert"><span class="sci-term" data-term="cme" tabindex="0" role="button">CME</span> SPACE WEATHER ALERT</span>
+        <h2 id="eventTitle">Solar Particle Event Incoming</h2>
+        <p id="eventDesc" class="event-desc"></p>
+
+        <div class="nasa-fact-box">
+          <strong data-i18n="nasaScience">🔬 Real NASA Science:</strong>
+          <p id="eventFact"></p>
+        </div>
+
+        <div class="choice-buttons">
+          <button id="choiceABtn" class="btn-choice" onclick="resolveEvent('A')"></button>
+          <button id="choiceBBtn" class="btn-choice secondary" onclick="resolveEvent('B')"></button>
+        </div>
+      </div>
+    </div>
+
+    <details class="data-attribution">
+      <summary data-i18n="sourceDetails">Mission science & data sources</summary>
+      <ul>
+        <li><strong>NASA DONKI Space Weather API</strong> <span data-i18n="sourceDonki">— CME reports and modeled impact data.</span></li>
+        <li><strong>NASA OSDR RadLab Dosimetry</strong> <span data-i18n="sourceOsdr">— radiation research context for habitat shielding.</span></li>
+        <li><strong>NASA Mars Trek Terrain Data</strong> <span data-i18n="sourceMarsTrek">— landing-site coordinates and elevation.</span></li>
+        <li><strong>CSA Space Food Toolkit</strong> <span data-i18n="sourceCsa">— food-system and greenhouse planning context.</span></li>
+      </ul>
+    </details>
+
+    <div id="glossaryModal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="glossaryTitle">
+      <div class="glossary-card">
+        <button class="glossary-close" type="button" onclick="closeGlossary()" data-i18n-aria-label="glossaryClose" aria-label="Close definition">×</button>
+        <span class="glossary-kicker" data-i18n="glossaryKicker">MISSION WORD</span>
+        <h2 id="glossaryTitle"></h2>
+        <p id="glossaryDefinition"></p>
+        <p id="glossaryComparison" class="glossary-comparison"></p>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
