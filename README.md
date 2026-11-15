@@ -1,6 +1,6 @@
 # Ares Horizon: Mars Outpost Commander
 
-**Play Live:** https://github.io
+**Play Live:** [https://github.io](https://bermudez-carlos.github.io/mars-outpost-command/)
 
 An interactive, bilingual (English / Spanish) Mars habitat survival and engineering simulator built for the **NASA International Space Apps Challenge**. Players command a 4-person NASA surface habitat across 15 Sols, balancing a 100 kW Kilopower + solar grid across life-support subsystems while responding to real Martian hazards.
 
