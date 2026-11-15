@@ -1,4 +1,4 @@
-# mars-outpost-command
+# Mars-Outpost-Commander
 
 ## Run the game
 
